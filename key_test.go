@@ -16,7 +16,7 @@ func TestKeyCreation(t *testing.T) {
 			Convey("The client is created", func() {
 				key, err := poudriereAKV.GetKey(uri)
 				So(err, ShouldBeNil)
-				pemKey := key.PEMKey()
+				pemKey := key.PEMKey
 				Convey("The key has a reasonable extent", func() {
 					So(len(pemKey), ShouldBeGreaterThan, 40)
 				})

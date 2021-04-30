@@ -15,13 +15,9 @@ import (
 	"gopkg.in/square/go-jose.v2"
 )
 
-type KeyVaultKey interface {
-	PEMKey() []byte
-}
-
-type keyVaultKey struct {
+type KeyVaultKey struct {
 	client keyvault.BaseClient
-	pemKey []byte
+	PEMKey []byte
 }
 
 func getClient() (keyvault.BaseClient, error) {
@@ -34,8 +30,8 @@ func getClient() (keyvault.BaseClient, error) {
 	return keyClient, nil
 }
 
-func GetKey(uri string) (KeyVaultKey, error) {
-	key := keyVaultKey{}
+func GetKey(uri string) (*KeyVaultKey, error) {
+	key := &KeyVaultKey{}
 	var err error
 
 	// Validate URI.
@@ -96,11 +92,7 @@ func GetKey(uri string) (KeyVaultKey, error) {
 		Bytes: x509.MarshalPKCS1PublicKey(rsaKey),
 	}
 
-	key.pemKey = pem.EncodeToMemory(pemBlock)
+	key.PEMKey = pem.EncodeToMemory(pemBlock)
 
 	return key, nil
-}
-
-func (k keyVaultKey) PEMKey() []byte {
-	return k.pemKey
 }
