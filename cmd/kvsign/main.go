@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/backerman/poudriereakv"
 )
@@ -16,6 +17,11 @@ const (
 	numArguments       = 1
 	wrongArgumentCount = 65 // arbitrary nonzero error code
 	badArgument        = 66
+
+	digestLength    = 32               // size of the digest to sign (raw)
+	digestHexLength = digestLength * 2 // size as hex encoded
+
+	readTimeout = 2 * time.Second // maximum wait time
 )
 
 func main() {
@@ -24,7 +30,7 @@ func main() {
 		os.Exit(wrongArgumentCount)
 	}
 	keyURI := os.Args[1]
-	digestHex, err := ioutil.ReadAll(os.Stdin)
+	digestHex, err := readWithTimeout(os.Stdin)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[ERROR] Reading digest failed: %v", err)
 		os.Exit(badArgument)
@@ -62,4 +68,26 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "\nExample invocation:")
 	fmt.Fprintf(w, "    %s https://foo.vault.azure.net/keys/bar\n\n", os.Args[0])
 	fmt.Fprintln(w, "The SHA256 digest to be signed should be passed on stdin in hex form.")
+}
+
+func readWithTimeout(r io.Reader) ([]byte, error) {
+	success := make(chan bool, 1)
+	buf := make([]byte, digestHexLength+1)
+	var n int
+	var err error
+	go func() {
+		// Read from the input.
+		n, err = r.Read(buf)
+		success <- true
+	}()
+	// Wait until timeout or enough characters read.
+	select {
+	case <-success:
+	case <-time.After(readTimeout):
+	}
+	if n < digestHexLength ||
+		(err != nil && err != io.EOF) {
+		return buf, errors.New("Unable to read digest")
+	}
+	return buf, nil
 }
