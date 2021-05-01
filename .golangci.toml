@@ -1,0 +1,7 @@
+[linters]
+enable = [
+    "revive",
+    "golint",
+    "gomnd",
+    "gosec"
+]
