@@ -15,12 +15,13 @@ import (
 	"gopkg.in/square/go-jose.v2"
 )
 
+// KeyVaultKey represents an RSA key pair stored in Azure Key Vault.
 type KeyVaultKey struct {
 	client  keyvault.BaseClient
 	baseURI string
 	name    string
 	version string
-	PEMKey  []byte
+	PEMKey  []byte // The public portion of the key in PEM encoding.
 }
 
 func getClient() (keyvault.BaseClient, error) {
@@ -39,6 +40,8 @@ const (
 	maxKeyVaultURIVersionLength  = 32
 )
 
+// GetKey creates a KeyVaultKey representing a key pair stored in Azure
+// Key Vault.
 func GetKey(uri string) (*KeyVaultKey, error) {
 	key := &KeyVaultKey{}
 	var err error

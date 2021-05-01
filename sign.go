@@ -9,11 +9,13 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/keyvault/v7.1/keyvault"
 )
 
+// Result represents the result of an Azure Key Vault signing operation.
 type Result struct {
-	KeyID     string
-	Signature []byte
+	KeyID     string // The versioned URI of the key used for this operation.
+	Signature []byte // The PKCS#1 signature of the provided digest.
 }
 
+// Sign signs the provided digest using this key.
 func (k *KeyVaultKey) Sign(ctx context.Context, digest []byte) (Result, error) {
 	res := Result{}
 	// Base64-encode digest.
