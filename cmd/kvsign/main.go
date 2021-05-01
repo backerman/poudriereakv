@@ -5,13 +5,15 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/backerman/poudriereakv"
 )
 
 const (
-	numArguments       = 2
+	numArguments       = 1
 	wrongArgumentCount = 65 // arbitrary nonzero error code
 	badArgument        = 66
 )
@@ -22,16 +24,19 @@ func main() {
 		os.Exit(wrongArgumentCount)
 	}
 	keyURI := os.Args[1]
-	digestHex := os.Args[2]
-
+	digestHex, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[ERROR] Reading digest failed: %v", err)
+		os.Exit(badArgument)
+	}
+	digest, err := hex.DecodeString(strings.TrimSpace(string(digestHex)))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[ERROR] Invalid digest: %v", err)
+		os.Exit(badArgument)
+	}
 	key, err := poudriereakv.GetKey(keyURI)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[ERROR] Unable to retrieve the signing key: %v", err)
-		os.Exit(badArgument)
-	}
-	digest, err := hex.DecodeString(digestHex)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "[ERROR] Invalid digest: %v", err)
 		os.Exit(badArgument)
 	}
 	result, err := key.Sign(context.Background(), digest)
@@ -52,10 +57,9 @@ func main() {
 }
 
 func printHelp(w io.Writer) {
-	fmt.Fprintf(w, "Usage: %s keyuri digest\n\n", os.Args[0])
+	fmt.Fprintf(w, "Usage: %s keyuri\n\n", os.Args[0])
 	fmt.Fprintln(w, "    keyuri   The URI (versioned or unversioned) of the AKV key to use.")
-	fmt.Fprintln(w, "    digest   The SHA-256 digest to sign in hex format.")
 	fmt.Fprintln(w, "\nExample invocation:")
-	fmt.Fprintf(w, "    %s https://foo.vault.azure.net/keys/bar \\\n", os.Args[0])
-	fmt.Fprintln(w, "        96188f22aa57a54c71becfee8bee87a96cc4394310e91d581d876fca1aad2f81")
+	fmt.Fprintf(w, "    %s https://foo.vault.azure.net/keys/bar\n\n", os.Args[0])
+	fmt.Fprintln(w, "The SHA256 digest to be signed should be passed on stdin in hex form.")
 }
