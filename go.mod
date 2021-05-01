@@ -1,4 +1,4 @@
-module github.com/backerman/poudriereAKV
+module github.com/backerman/poudriereakv
 
 go 1.16
 

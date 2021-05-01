@@ -1,11 +1,10 @@
-package poudriereAKV_test
+package poudriereakv_test
 
 import (
 	"os"
 	"testing"
 
-	"github.com/backerman/poudriereAKV"
-
+	"github.com/backerman/poudriereakv"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -14,7 +13,7 @@ func TestKeyCreation(t *testing.T) {
 		Convey("If it's valid", func() {
 			uri := os.Getenv("TEST_KEY")
 			Convey("The client is created", func() {
-				key, err := poudriereAKV.GetKey(uri)
+				key, err := poudriereakv.GetKey(uri)
 				So(err, ShouldBeNil)
 				pemKey := key.PEMKey
 				Convey("The key has a reasonable extent", func() {
@@ -43,7 +42,7 @@ func TestKeyCreation(t *testing.T) {
 			Convey(test.description, func() {
 				uri := test.uri
 				Convey("The client is not created", func() {
-					_, err := poudriereAKV.GetKey(uri)
+					_, err := poudriereakv.GetKey(uri)
 					So(err, ShouldNotBeNil)
 				})
 			})
