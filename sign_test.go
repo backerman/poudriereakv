@@ -32,11 +32,11 @@ func TestSignature(t *testing.T) {
 			Convey("The signature should be verifiable", func() {
 				block, rest := pem.Decode(key.PEMKey)
 				So(rest, ShouldBeEmpty)
-				So(block.Type, ShouldEqual, "RSA PUBLIC KEY")
-				pubKey, err := x509.ParsePKCS1PublicKey(block.Bytes)
+				So(block.Type, ShouldEqual, "PUBLIC KEY")
+				pubKey, err := x509.ParsePKIXPublicKey(block.Bytes)
 				So(err, ShouldBeNil)
 				err = rsa.VerifyPKCS1v15(
-					pubKey, crypto.SHA256, digest[:], result.Signature)
+					pubKey.(*rsa.PublicKey), crypto.SHA256, digest[:], result.Signature)
 				So(err, ShouldBeNil)
 			})
 		})

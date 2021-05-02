@@ -104,10 +104,14 @@ func GetKey(uri string) (*KeyVaultKey, error) {
 	if !ok {
 		return nil, errors.New("key is not of type *rsa.PublicKey")
 	}
+	marshalled, err := x509.MarshalPKIXPublicKey(rsaKey)
+	if err != nil {
+		return nil, err
+	}
 
 	pemBlock := &pem.Block{
-		Type:  "RSA PUBLIC KEY",
-		Bytes: x509.MarshalPKCS1PublicKey(rsaKey),
+		Type:  "PUBLIC KEY",
+		Bytes: marshalled,
 	}
 	key.PEMKey = pem.EncodeToMemory(pemBlock)
 

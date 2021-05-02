@@ -19,9 +19,9 @@ func TestKeyCreation(t *testing.T) {
 				Convey("The key has a reasonable extent", func() {
 					So(len(pemKey), ShouldBeGreaterThan, 40)
 				})
-				Convey("The key looks like PKCS#1", func() {
+				Convey("The key looks like SubjectPublicKeyInfo", func() {
 					pemString := string(pemKey)
-					So(pemString, ShouldStartWith, "-----BEGIN RSA PUBLIC KEY-----")
+					So(pemString, ShouldStartWith, "-----BEGIN PUBLIC KEY-----")
 				})
 			})
 		})
