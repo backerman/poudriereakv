@@ -37,7 +37,7 @@ func getClient() (keyvault.BaseClient, error) {
 const (
 	unversionedKVURISegmentCount = 3
 	versionedKVURISegmentCount   = 4
-	maxKeyVaultURIVersionLength  = 32
+	keyVaultURIVersionLength     = 32
 )
 
 // GetKey creates a KeyVaultKey representing a key pair stored in Azure
@@ -71,7 +71,7 @@ func GetKey(uri string) (*KeyVaultKey, error) {
 	if pathLength == versionedKVURISegmentCount {
 		// A version identifier is present.
 		key.version = splitPath[3]
-		if len(key.version) != maxKeyVaultURIVersionLength {
+		if len(key.version) != keyVaultURIVersionLength {
 			return nil, errors.New("a Key Vault object version must be exactly 32 characters long")
 		}
 	}

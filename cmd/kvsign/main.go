@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -24,18 +25,33 @@ const (
 	readTimeout = 2 * time.Second // maximum wait time
 )
 
+var debug bool
+
 func main() {
-	if len(os.Args) != numArguments+1 {
+	debugFlag := flag.Bool("debug", false, "Turn on debug messages")
+	flag.Parse()
+	debug = *debugFlag
+	positionalArgs := flag.Args()
+	if len(positionalArgs) != numArguments {
 		printHelp(os.Stderr)
 		os.Exit(wrongArgumentCount)
 	}
-	keyURI := os.Args[1]
+	keyURI := positionalArgs[0]
 	digestHex, err := readWithTimeout(os.Stdin)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[ERROR] Reading digest failed: %v", err)
 		os.Exit(badArgument)
 	}
-	digest, err := hex.DecodeString(strings.TrimSpace(string(digestHex)))
+	trimmedDigest := strings.TrimSpace(string(digestHex))
+	if debug {
+		fmt.Fprintf(os.Stderr, "Got digest %v\n", trimmedDigest)
+	}
+	if len(trimmedDigest) != digestHexLength {
+		fmt.Fprintf(os.Stderr, "[ERROR] Digest has invalid length %v (should be %v)",
+			len(trimmedDigest), digestHexLength)
+		os.Exit(badArgument)
+	}
+	digest, err := hex.DecodeString(trimmedDigest)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[ERROR] Invalid digest: %v", err)
 		os.Exit(badArgument)
