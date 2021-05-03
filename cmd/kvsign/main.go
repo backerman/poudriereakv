@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"encoding/hex"
+	"crypto/sha256"
 	"errors"
 	"flag"
 	"fmt"
@@ -54,17 +54,15 @@ func main() {
 			len(trimmedDigest), digestHexLength, trimmedDigest)
 		os.Exit(badArgument)
 	}
-	digest, err := hex.DecodeString(trimmedDigest)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "[ERROR] Invalid digest: %v", err)
-		os.Exit(badArgument)
-	}
+	// Oh, you thought it signs the digest of the meta file? Nope!
+	// It signs the digest of the digest.
+	digestOfDigest := sha256.Sum256([]byte(trimmedDigest))
 	key, err := poudriereakv.GetKey(keyURI)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[ERROR] Unable to retrieve the signing key: %v", err)
 		os.Exit(badArgument)
 	}
-	result, err := key.Sign(context.Background(), digest)
+	result, err := key.Sign(context.Background(), digestOfDigest[:])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[ERROR] Unable to sign digest: %v", err)
 		os.Exit(badArgument)
