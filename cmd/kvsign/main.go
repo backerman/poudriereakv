@@ -43,12 +43,15 @@ func main() {
 		os.Exit(badArgument)
 	}
 	trimmedDigest := strings.TrimSpace(string(digestHex))
+	// Also trim nulls, which can show up if timeout occurs and digest has been
+	// fully read into the buffer.
+	trimmedDigest = strings.Trim(trimmedDigest, "\x00")
 	if debug {
-		fmt.Fprintf(os.Stderr, "Got digest %v\n", trimmedDigest)
+		fmt.Fprintf(os.Stderr, "Got digest '%v'\n", trimmedDigest)
 	}
 	if len(trimmedDigest) != digestHexLength {
-		fmt.Fprintf(os.Stderr, "[ERROR] Digest has invalid length %v (should be %v)",
-			len(trimmedDigest), digestHexLength)
+		fmt.Fprintf(os.Stderr, "[ERROR] Digest has invalid length %v (should be %v): %q",
+			len(trimmedDigest), digestHexLength, trimmedDigest)
 		os.Exit(badArgument)
 	}
 	digest, err := hex.DecodeString(trimmedDigest)
