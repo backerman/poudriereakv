@@ -1,6 +1,6 @@
 module github.com/backerman/poudriereakv
 
-go 1.19
+go 1.23.0
 
 require (
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
@@ -25,5 +25,5 @@ require (
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/smarty/assertions v1.15.0 // indirect
-	golang.org/x/crypto v0.8.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
 )
