@@ -4,6 +4,7 @@
 
 # Local stuff
 .env
+.idea
 
 ### Emacs ###
 # -*- mode: gitignore; -*-
