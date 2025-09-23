@@ -10,28 +10,27 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/keyvault/auth"
-	"github.com/Azure/azure-sdk-for-go/services/keyvault/v7.1/keyvault"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azkeys"
 	"github.com/go-jose/go-jose/v4"
 )
 
 // KeyVaultKey represents an RSA key pair stored in Azure Key Vault.
 type KeyVaultKey struct {
-	client  keyvault.BaseClient
+	client  *azkeys.Client
 	baseURI string
 	name    string
 	version string
 	PEMKey  []byte // The public portion of the key in PEM encoding.
 }
 
-func getClient() (keyvault.BaseClient, error) {
-	keyClient := keyvault.New()
-	a, err := auth.NewAuthorizerFromEnvironment()
+func getClient(vaultUri string) (*azkeys.Client, error) {
+	a, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		return keyClient, err
+		return nil, err
 	}
-	keyClient.Authorizer = a
-	return keyClient, nil
+	keyClient, err := azkeys.NewClient(vaultUri, a, nil)
+	return keyClient, err
 }
 
 const (
@@ -75,8 +74,8 @@ func GetKey(uri string) (*KeyVaultKey, error) {
 			return nil, errors.New("a Key Vault object version must be exactly 32 characters long")
 		}
 	}
-
-	key.client, err = getClient()
+	vaultUri := parsedURI.Scheme + "://" + parsedURI.Hostname()
+	key.client, err = getClient(vaultUri)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +85,7 @@ func GetKey(uri string) (*KeyVaultKey, error) {
 	key.name = splitPath[2]
 	parsedURI.Path = "/" // nope!
 	key.baseURI = parsedURI.String()
-	bundle, err := key.client.GetKey(ctx, key.baseURI, key.name, "")
+	bundle, err := key.client.GetKey(ctx, key.name, key.version, nil)
 	if err != nil {
 		return nil, err
 	}
